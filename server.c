@@ -8,7 +8,7 @@
 
 int main() {
     int fdr, fdw;
-    char MENU[80] = "Select one: \n Social Service: 1 \n Professional Practices: 2";
+    char MENU[80] = "Waiting for: \n 1: Social Service \n 2: Professional Practices";
     char option[1];
 
 
@@ -20,28 +20,34 @@ int main() {
     mkfifo(myfifo, 0666);
 
     while (1) {
-        // Sends client the options he has to read the information.
-        fdw = open(myfifo, O_WRONLY);
-        write(fdw, MENU, strlen(MENU)+1);
+        //Añadir variable de control para que no se impriman cosas no deseadas
 
-        close(fdw);
-
-        char str1[80], str2[80];
+        printf("%s\n", MENU);
 
         // Read response from client
         fdr = open(myfifo, O_RDONLY);
         read(fdr, option, 1);
         // Print the read string and close
-        printf("Client selected: %s\n", option);
+        printf("Client sent: %s\n", option);
         close(fdr);
+
+        char str1[80], str2[80];
+        char content[1024];
 
         switch (atoi(option)) {
         case 1: ;
             //Read and send Social Service
 
-	        //fopen("ss.txt", "r");
-            char content[1024];
+            int fdss = open("ss.txt", O_RDONLY);
 
+            if(fdss == -1) {
+                perror("Failed to open file\n");
+            } else {
+                read(fdss, content, sizeof(content));
+
+                close(fdss);
+            }
+            printf("File content: %s\n", content);
 
             // Now open in write mode and write
             // string taken from file.

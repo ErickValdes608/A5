@@ -10,6 +10,7 @@
 int main()
 {
     int fd;
+    char MENU[80] = "Select one: \n 1: Social Service \n 2: Professional Practices";
 
     // FIFO file path
     char * myfifo = "/tmp/myfifo";
