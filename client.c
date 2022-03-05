@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <string.h>
 
 struct Data {
     char name[20];
@@ -39,7 +40,7 @@ int main() {
         // Open Client FIFO for Read only
         fdr = open(info.name, O_RDONLY);
         read(fdr, &info, sizeof(info));
-        printf("Server: %s\n",info.response);
+        printf("Server: %s\n", info.response);
         close(fdr);
     }
     return 0;

@@ -14,7 +14,6 @@ int main() {
     char MENU[80] = "Waiting for client: \n 1: Social Service \n 2: Professional Practices";
     char option[1];
 
-    struct Data info;
 
     //Open server connection
     system("mkfifo server");
@@ -31,30 +30,28 @@ int main() {
       if (!waitForProcessFlag)
       {
         waitForProcessFlag = 1;
-        //Añadir variable de control para que no se impriman cosas no deseadas
 
         printf("%s\n", MENU);
 
+        struct Data info;
+
         // Read response from client
         read(fdr, &info, sizeof(info));
-        // Print the read string and close
-        printf("Client sent: %d\n", info.option);
-        
+        // Print the read option
+        printf("Client %s sent: %d\n", info.name, info.option);
 
-        char str1[80], str2[80];
         char content[1024];
 
         switch (info.option) {
         case 1: ;
-            //Read and send Social Service
-
+            //Read and send Social Service information from file
             int fdss = open("ss.txt", O_RDONLY);
 
             if(fdss == -1) {
                 perror("Failed to open file\n");
             } else {
                 read(fdss, content, sizeof(content));
-
+                //info.response = content;
                 close(fdss);
             }
             printf("File content: %s\n", content);
@@ -62,16 +59,14 @@ int main() {
             // Now open in write mode and write
             // string taken from file.
             fdw = open(info.name, O_WRONLY);
-        //printf(">> Server :  %s" content);
-        //    fgets(str2, 80, stdin);
-        //printf("\n");
-            write(fdw, content, strlen(content)+1);
+
+            write(fdw, &info, sizeof(info));
             close(fdw);
             
             waitForProcessFlag = 0;
             break;
         case 2: ;
-            //Read and send Professional Practices
+            //Read and send Professional Practices information from file
             int fdpp = open("pp.txt", O_RDONLY);
 
             if(fdpp == -1) {
@@ -86,10 +81,8 @@ int main() {
             // Now open in write mode and write
             // string taken from file.
             fdw = open(info.name, O_WRONLY);
-        //printf(">> Server :  %s" content);
-        //    fgets(str2, 80, stdin);
-        //printf("\n");
-            write(fdw, content, strlen(content)+1);
+
+            write(fdw, &info, sizeof(info));
             close(fdw);
             waitForProcessFlag = 0;
             break;
