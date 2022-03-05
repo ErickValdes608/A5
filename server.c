@@ -1,23 +1,29 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <fcntl.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <unistd.h>
+
+struct Data {
+    char name[20];
+    int option;
+    char response[512];
+};
 
 int main() {
     int fdr, fdw;
-    char MENU[80] = "Waiting for: \n 1: Social Service \n 2: Professional Practices";
+    char MENU[80] = "Waiting for client: \n 1: Social Service \n 2: Professional Practices";
     char option[1];
 
+    struct Data info;
 
-    // FIFO file path
-    char * myfifo = "/tmp/myfifo";
+    //Open server connection
+    system("mkfifo server");
 
-    // Creating the named file(FIFO)
-    // mkfifo(<pathname>,<permission>)
-    mkfifo(myfifo, 0666);
+    fdr = open("server", O_RDONLY);
+    if(fdr == -1) {
+        perror("Fatal error");
+        exit(1);
+    }
 
     int waitForProcessFlag = 0;
 
@@ -30,17 +36,16 @@ int main() {
         printf("%s\n", MENU);
 
         // Read response from client
-        fdr = open(myfifo, O_RDONLY);
-        read(fdr, option, 1);
+        read(fdr, &info, sizeof(info));
         // Print the read string and close
-        printf("Client sent: %s\n", option);
-        close(fdr);
+        printf("Client sent: %d\n", info.option);
+        
 
         char str1[80], str2[80];
         char content[1024];
 
-        switch (atoi(option)) {
-        case 1:
+        switch (info.option) {
+        case 1: ;
             //Read and send Social Service
 
             int fdss = open("ss.txt", O_RDONLY);
@@ -56,7 +61,7 @@ int main() {
 
             // Now open in write mode and write
             // string taken from file.
-            fdw = open(myfifo, O_WRONLY);
+            fdw = open(info.name, O_WRONLY);
         //printf(">> Server :  %s" content);
         //    fgets(str2, 80, stdin);
         //printf("\n");
@@ -65,7 +70,7 @@ int main() {
             
             waitForProcessFlag = 0;
             break;
-        case 2:
+        case 2: ;
             //Read and send Professional Practices
             int fdpp = open("pp.txt", O_RDONLY);
 
@@ -80,7 +85,7 @@ int main() {
 
             // Now open in write mode and write
             // string taken from file.
-            fdw = open(myfifo, O_WRONLY);
+            fdw = open(info.name, O_WRONLY);
         //printf(">> Server :  %s" content);
         //    fgets(str2, 80, stdin);
         //printf("\n");
@@ -89,7 +94,9 @@ int main() {
             waitForProcessFlag = 0;
             break;
         default:
-            printf("Invalid option\n");
+            printf("Closing Server\n");
+            close(fdr);
+            return 0;
             break;
         }
       }

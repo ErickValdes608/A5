@@ -1,50 +1,46 @@
 // C program to implement one side of FIFO
-// This side writes first, then reads
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
 #include <fcntl.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <unistd.h>
 
-int main()
-{
-    int fd;
-    char MENU[80] = "Select one: \n 1: Social Service \n 2: Professional Practices";
+struct Data {
+    char name[20];
+    int option;
+    char response[512];
+};
 
-    // FIFO file path
-    char * myfifo = "/tmp/myfifo";
+int main() {
+    int fdr, fdw;
+    struct Data info;
+    char command[30] ="mkfifo ";
 
-    // Creating the named file(FIFO)
-    // mkfifo(<pathname>, <permission>)
-    mkfifo(myfifo, 0666);
+    char MENU[80] = "Select one: \n 1: Social Service \n 2: Professional Practices\n";
 
-    char arr1[80], resp[2];
+    printf("Set your name: \n");
+    scanf("%s", info.name);
+
+    strcat(command, info.name);
+    // Create the client fifo
+    system(command);
+
     while (1) {
+	    printf("%s", MENU);
+        scanf("%d", &info.option);
 
-        // Open FIFO for write only
-        fd = open(myfifo, O_WRONLY);
+        // Open Server FIFO for write only
+        fdw = open("server", O_WRONLY);
 
-        // Take an input arr2ing from user.
-        // 80 is maximum length
-	printf(">> Client 1:  ");
-        fgets(resp, 2, stdin);
-	printf("\n");
-
-        // Write the input arr2ing on FIFO
+        // Write the input on FIFO
         // and close it
-        write(fd, resp, strlen(resp)+1);
-        close(fd);
-        // Open FIFO for Read only
-        fd = open(myfifo, O_RDONLY);
+        write(fdw, &info, sizeof(info));
+        close(fdw);
 
-        // Read from FIFO
-        read(fd, arr1, sizeof(arr1));
-
-        // Print the read message
-        printf("Server: %s\n", arr1);
-        close(fd);
-
+        // Open Client FIFO for Read only
+        fdr = open(info.name, O_RDONLY);
+        read(fdr, &info, sizeof(info));
+        printf("Server: %s\n",info.response);
+        close(fdr);
     }
     return 0;
 }
