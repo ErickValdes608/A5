@@ -21,16 +21,6 @@ int main()
 
     char arr1[80], resp[2];
     while (1) {
-        // Open FIFO for Read only
-        fd = open(myfifo, O_RDONLY);
-
-        // Read from FIFO
-        read(fd, arr1, sizeof(arr1));
-
-        // Print the read message
-        printf("Server: %s\n", arr1);
-        close(fd);
-
 
         // Open FIFO for write only
         fd = open(myfifo, O_WRONLY);
@@ -44,6 +34,15 @@ int main()
         // Write the input arr2ing on FIFO
         // and close it
         write(fd, resp, strlen(resp)+1);
+        close(fd);
+        // Open FIFO for Read only
+        fd = open(myfifo, O_RDONLY);
+
+        // Read from FIFO
+        read(fd, arr1, sizeof(arr1));
+
+        // Print the read message
+        printf("Server: %s\n", arr1);
         close(fd);
 
     }

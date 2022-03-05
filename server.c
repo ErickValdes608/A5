@@ -19,7 +19,12 @@ int main() {
     // mkfifo(<pathname>,<permission>)
     mkfifo(myfifo, 0666);
 
+    int waitForProcessFlag = 0;
+
     while (1) {
+      if (!waitForProcessFlag)
+      {
+        waitForProcessFlag = 1;
         //Añadir variable de control para que no se impriman cosas no deseadas
 
         printf("%s\n", MENU);
@@ -35,7 +40,7 @@ int main() {
         char content[1024];
 
         switch (atoi(option)) {
-        case 1: ;
+        case 1:
             //Read and send Social Service
 
             int fdss = open("ss.txt", O_RDONLY);
@@ -57,15 +62,37 @@ int main() {
         //printf("\n");
             write(fdw, content, strlen(content)+1);
             close(fdw);
+            
+            waitForProcessFlag = 0;
             break;
         case 2:
             //Read and send Professional Practices
+            int fdpp = open("pp.txt", O_RDONLY);
 
+            if(fdpp == -1) {
+                perror("Failed to open file\n");
+            } else {
+                read(fdpp, content, sizeof(content));
+
+                close(fdpp);
+            }
+            printf("File content: %s\n", content);
+
+            // Now open in write mode and write
+            // string taken from file.
+            fdw = open(myfifo, O_WRONLY);
+        //printf(">> Server :  %s" content);
+        //    fgets(str2, 80, stdin);
+        //printf("\n");
+            write(fdw, content, strlen(content)+1);
+            close(fdw);
+            waitForProcessFlag = 0;
             break;
         default:
             printf("Invalid option\n");
             break;
         }
+      }
     }
     return 0;
 }
